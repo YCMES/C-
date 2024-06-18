@@ -1,0 +1,267 @@
+Tabii, C# ile yazılmış bu kütüphane yönetim uygulamasını adım adım açıklayarak anlatalım:
+
+### `Kitap` Sınıfı
+
+```csharp
+public class Kitap
+{
+    public string Title { get; set; }
+    public string Author { get; set; }
+    public string ISBN { get; set; }
+    public bool IsLent { get; set; }
+
+    public Kitap(string title, string author, string isbn)
+    {
+        Title = title;
+        Author = author;
+        ISBN = isbn;
+        IsLent = false;  // Yeni eklenen kitaplar ödünç verilmediği varsayılır
+    }
+
+    public override string ToString()
+    {
+        return $"Title: {Title}, Author: {Author}, ISBN: {ISBN}, IsLent: {IsLent}";
+    }
+}
+```
+
+- **Açıklama**: `Kitap` sınıfı, her bir kitabın özelliklerini (başlık, yazar, ISBN) ve ödünç verilip verilmediğini belirten bir alanı (`IsLent`) içerir. Yapıcı metotu ile yeni bir kitap eklerken başlık, yazar ve ISBN bilgilerini alır. `ToString()` metodu ise kitabın özelliklerini okunabilir bir şekilde döndürür.
+
+### `Kullanici` Sınıfı
+
+```csharp
+public class Kullanici
+{
+    public string Name { get; set; }
+    public int UserID { get; set; }
+
+    public Kullanici(string name, int userId)
+    {
+        Name = name;
+        UserID = userId;
+    }
+
+    public override string ToString()
+    {
+        return $"Name: {Name}, UserID: {UserID}";
+    }
+}
+```
+
+- **Açıklama**: `Kullanici` sınıfı, kütüphane kullanıcılarının adını ve benzersiz kullanıcı kimlik numarasını (UserID) içerir. Yapıcı metodu ile yeni bir kullanıcı eklerken ad ve kullanıcı kimlik numarası bilgilerini alır. `ToString()` metodu kullanıcının özelliklerini okunabilir bir şekilde döndürür.
+
+### `Kutuphane` Sınıfı
+
+```csharp
+public class Kutuphane
+{
+    private List<Kitap> kitaplar = new List<Kitap>();
+    private List<Kullanici> kullanicilar = new List<Kullanici>();
+
+    public void AddBook(Kitap kitap)
+    {
+        kitaplar.Add(kitap);
+    }
+
+    public void ListBooks()
+    {
+        foreach (var kitap in kitaplar)
+        {
+            Console.WriteLine(kitap);
+        }
+    }
+
+    public void AddUser(Kullanici kullanici)
+    {
+        kullanicilar.Add(kullanici);
+    }
+
+    public void ListUsers()
+    {
+        foreach (var kullanici in kullanicilar)
+        {
+            Console.WriteLine(kullanici);
+        }
+    }
+
+    public void LendBook(string isbn, int userId)
+    {
+        var kitap = kitaplar.Find(k => k.ISBN == isbn);
+        if (kitap != null && !kitap.IsLent)
+        {
+            kitap.IsLent = true;
+            Console.WriteLine($"Book {kitap.Title} lent to user {userId}");
+        }
+        else
+        {
+            Console.WriteLine("Book is not available or already lent.");
+        }
+    }
+
+    public void ReturnBook(string isbn)
+    {
+        var kitap = kitaplar.Find(k => k.ISBN == isbn);
+        if (kitap != null && kitap.IsLent)
+        {
+            kitap.IsLent = false;
+            Console.WriteLine($"Book {kitap.Title} returned.");
+        }
+        else
+        {
+            Console.WriteLine("Book is not lent or does not exist.");
+        }
+    }
+
+    public void SaveBooksToFile(string filePath)
+    {
+        using (StreamWriter sw = new StreamWriter(filePath))
+        {
+            foreach (var kitap in kitaplar)
+            {
+                sw.WriteLine($"{kitap.Title},{kitap.Author},{kitap.ISBN},{kitap.IsLent}");
+            }
+        }
+        Console.WriteLine("Books saved to file.");
+    }
+
+    public void SaveUsersToFile(string filePath)
+    {
+        using (StreamWriter sw = new StreamWriter(filePath))
+        {
+            foreach (var kullanici in kullanicilar)
+            {
+                sw.WriteLine($"{kullanici.Name},{kullanici.UserID}");
+            }
+        }
+        Console.WriteLine("Users saved to file.");
+    }
+
+    public void ReadBooksFromFile(string filePath)
+    {
+        if (File.Exists(filePath))
+        {
+            using (StreamReader sr = new StreamReader(filePath))
+            {
+                string line;
+                while ((line = sr.ReadLine()) != null)
+                {
+                    var parts = line.Split(',');
+                    if (parts.Length == 4)
+                    {
+                        var kitap = new Kitap(parts[0], parts[1], parts[2])
+                        {
+                            IsLent = bool.Parse(parts[3])
+                        };
+                        kitaplar.Add(kitap);
+                    }
+                }
+            }
+            Console.WriteLine("Books read from file.");
+        }
+        else
+        {
+            Console.WriteLine("File not found.");
+        }
+    }
+
+    public void ReadUsersFromFile(string filePath)
+    {
+        if (File.Exists(filePath))
+        {
+            using (StreamReader sr = new StreamReader(filePath))
+            {
+                string line;
+                while ((line = sr.ReadLine()) != null)
+                {
+                    var parts = line.Split(',');
+                    if (parts.Length == 2)
+                    {
+                        var kullanici = new Kullanici(parts[0], int.Parse(parts[1]));
+                        kullanicilar.Add(kullanici);
+                    }
+                }
+            }
+            Console.WriteLine("Users read from file.");
+        }
+        else
+        {
+            Console.WriteLine("File not found.");
+        }
+    }
+}
+```
+
+- **Açıklama**: `Kutuphane` sınıfı, kitapları ve kullanıcıları yönetmek için gerekli işlevleri sağlar. `AddBook`, `AddUser` gibi metotlar yeni kitap veya kullanıcı eklerken, `ListBooks`, `ListUsers` gibi metotlar mevcut kitapları veya kullanıcıları liste olarak gösterir. `LendBook`, `ReturnBook` metotları kitap ödünç verme ve iade işlemlerini gerçekleştirir. `SaveBooksToFile`, `SaveUsersToFile` metotları kitap ve kullanıcı bilgilerini dosyaya kaydederken, `ReadBooksFromFile`, `ReadUsersFromFile` metotları dosyadan kitap ve kullanıcı bilgilerini okur ve listeye ekler.
+
+### `Program` Sınıfı
+
+```csharp
+class Program
+{
+    static void Main()
+    {
+        Kutuphane kutuphane = new Kutuphane();
+
+        while (true)
+        {
+            Console.WriteLine("1. Kitap Ekle");
+            Console.WriteLine("2. Kitaplari Listele");
+            Console.WriteLine("3. Kullanici Ekle");
+            Console.WriteLine("4. Kullanicilari Listele");
+            Console.WriteLine("5. Kitap Odunc Ver");
+            Console.WriteLine("6. Kitap Iade Al");
+            Console.WriteLine("7. Kitapları Dosyaya Kaydet");
+            Console.WriteLine("8. Dosyadan Kitapları Oku");
+            Console.WriteLine("9. Kullanıcıları Dosyaya Kaydet");
+            Console.WriteLine("10. Dosyadan Kullanıcıları Oku");
+            Console.WriteLine("11. Çıkış");
+
+            Console.Write("Seçiminiz: ");
+            int secim = int.Parse(Console.ReadLine());
+
+            switch (secim)
+            {
+                case 1:
+                    Console.Write("Başlık: ");
+                    string title = Console.ReadLine();
+                    Console.Write("Yazar: ");
+                    string author = Console.ReadLine();
+                    Console.Write("ISBN: ");
+                    string isbn = Console.ReadLine();
+                    kutuphane.AddBook(new Kitap(title, author, isbn));
+                    break;
+                case 2:
+                    kutuphane.ListBooks();
+                    break;
+                case 3:
+                    Console.Write("Ad: ");
+                    string name = Console.ReadLine();
+                    Console.Write("Kullanıcı ID: ");
+                    int userId = int.Parse(Console.ReadLine());
+                    kutuphane.AddUser(new Kullanici(name, userId));
+                    break;
+                case 4:
+                    kutuphane.ListUsers();
+                    break;
+                case 5:
+                    Console.Write("ISBN: ");
+                    string lendIsbn = Console.ReadLine();
+                    Console.Write("Kullanıcı ID: ");
+                    int lendUserId = int.Parse(Console.ReadLine());
+                    kutuphane.LendBook(lendIsbn, lendUserId);
+                    break;
+                case 6:
+                    Console.Write("ISBN: ");
+                    string returnIsbn = Console.ReadLine();
+                    kutuphane.ReturnBook(returnIsbn);
+                    break;
+                case 7:
+                    Console.Write("Kitaplar dosya yolu: ");
+                    string kitapDosyaYolu = Console.ReadLine();
+                    kutuphane.SaveBooksToFile(kitapDosyaYolu);
+                    break;
+                case 8:
+                    Console.Write("Kitaplar dosya yolu: ");
+                    string kitapOkuDosyaYolu = Console.ReadLine();
+                    kutuphane.ReadBooksFromFile(kitapOkuDosyaYolu);
+                   
