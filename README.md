@@ -1,10 +1,11 @@
-C# kütüphane projesi
+# C# Kütüphane Projesi
 
 C# ile bir kütüphane projesi oluşturmak istiyorsanız, genellikle aşağıdaki adımları izleyebilirsiniz:
 
 1. **Proje Oluşturma ve Ayarlar:**
    - Visual Studio veya başka bir IDE kullanarak yeni bir C# konsol uygulaması projesi oluşturun.
    - Proje adını ve yerini belirleyin.
+   - Kütüphane|C# dosyası üzerinden yazılıma erişebilirsiniz.
 
 2. **Sınıfların Tasarlanması:**
    - Kütüphanenizdeki kitapları, üyeleri ve ödünç işlemlerini yönetmek için gerekli sınıfları tasarlayın.
