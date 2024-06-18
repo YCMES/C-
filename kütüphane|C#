@@ -1,0 +1,268 @@
+#YCMES
+using System;
+using System.Collections.Generic;
+using System.IO;
+
+public class Kitap
+{
+    public string Title { get; set; }
+    public string Author { get; set; }
+    public string ISBN { get; set; }
+    public bool IsLent { get; set; }
+
+    public Kitap(string title, string author, string isbn)
+    {
+        Title = title;
+        Author = author;
+        ISBN = isbn;
+        IsLent = false;
+    }
+
+    public override string ToString()
+    {
+        return $"Title: {Title}, Author: {Author}, ISBN: {ISBN}, IsLent: {IsLent}";
+    }
+}
+
+public class Kullanici
+{
+    public string Name { get; set; }
+    public int UserID { get; set; }
+
+    public Kullanici(string name, int userId)
+    {
+        Name = name;
+        UserID = userId;
+    }
+
+    public override string ToString()
+    {
+        return $"Name: {Name}, UserID: {UserID}";
+    }
+}
+
+public class Kutuphane
+{
+    private List<Kitap> kitaplar = new List<Kitap>();
+    private List<Kullanici> kullanicilar = new List<Kullanici>();
+
+    public void AddBook(Kitap kitap)
+    {
+        kitaplar.Add(kitap);
+    }
+
+    public void ListBooks()
+    {
+        foreach (var kitap in kitaplar)
+        {
+            Console.WriteLine(kitap);
+        }
+    }
+
+    public void AddUser(Kullanici kullanici)
+    {
+        kullanicilar.Add(kullanici);
+    }
+
+    public void ListUsers()
+    {
+        foreach (var kullanici in kullanicilar)
+        {
+            Console.WriteLine(kullanici);
+        }
+    }
+
+    public void LendBook(string isbn, int userId)
+    {
+        var kitap = kitaplar.Find(k => k.ISBN == isbn);
+        if (kitap != null && !kitap.IsLent)
+        {
+            kitap.IsLent = true;
+            Console.WriteLine($"Book {kitap.Title} lent to user {userId}");
+        }
+        else
+        {
+            Console.WriteLine("Book is not available or already lent.");
+        }
+    }
+
+    public void ReturnBook(string isbn)
+    {
+        var kitap = kitaplar.Find(k => k.ISBN == isbn);
+        if (kitap != null && kitap.IsLent)
+        {
+            kitap.IsLent = false;
+            Console.WriteLine($"Book {kitap.Title} returned.");
+        }
+        else
+        {
+            Console.WriteLine("Book is not lent or does not exist.");
+        }
+    }
+
+    public void SaveBooksToFile(string filePath)
+    {
+        using (StreamWriter sw = new StreamWriter(filePath))
+        {
+            foreach (var kitap in kitaplar)
+            {
+                sw.WriteLine($"{kitap.Title},{kitap.Author},{kitap.ISBN},{kitap.IsLent}");
+            }
+        }
+        Console.WriteLine("Books saved to file.");
+    }
+
+    public void SaveUsersToFile(string filePath)
+    {
+        using (StreamWriter sw = new StreamWriter(filePath))
+        {
+            foreach (var kullanici in kullanicilar)
+            {
+                sw.WriteLine($"{kullanici.Name},{kullanici.UserID}");
+            }
+        }
+        Console.WriteLine("Users saved to file.");
+    }
+
+    public void ReadBooksFromFile(string filePath)
+    {
+        if (File.Exists(filePath))
+        {
+            using (StreamReader sr = new StreamReader(filePath))
+            {
+                string line;
+                while ((line = sr.ReadLine()) != null)
+                {
+                    var parts = line.Split(',');
+                    if (parts.Length == 4)
+                    {
+                        var kitap = new Kitap(parts[0], parts[1], parts[2])
+                        {
+                            IsLent = bool.Parse(parts[3])
+                        };
+                        kitaplar.Add(kitap);
+                    }
+                }
+            }
+            Console.WriteLine("Books read from file.");
+        }
+        else
+        {
+            Console.WriteLine("File not found.");
+        }
+    }
+
+    public void ReadUsersFromFile(string filePath)
+    {
+        if (File.Exists(filePath))
+        {
+            using (StreamReader sr = new StreamReader(filePath))
+            {
+                string line;
+                while ((line = sr.ReadLine()) != null)
+                {
+                    var parts = line.Split(',');
+                    if (parts.Length == 2)
+                    {
+                        var kullanici = new Kullanici(parts[0], int.Parse(parts[1]));
+                        kullanicilar.Add(kullanici);
+                    }
+                }
+            }
+            Console.WriteLine("Users read from file.");
+        }
+        else
+        {
+            Console.WriteLine("File not found.");
+        }
+    }
+}
+
+class Program
+{
+    static void Main()
+    {
+        Kutuphane kutuphane = new Kutuphane();
+
+        while (true)
+        {
+            Console.WriteLine("1. Kitap Ekle");
+            Console.WriteLine("2. Kitaplari Listele");
+            Console.WriteLine("3. Kullanici Ekle");
+            Console.WriteLine("4. Kullanicilari Listele");
+            Console.WriteLine("5. Kitap Odunc Ver");
+            Console.WriteLine("6. Kitap Iade Al");
+            Console.WriteLine("7. Kullanicilari Dosyaya Yaz");
+            Console.WriteLine("8. Dosyadan Kitaplari Oku");
+            Console.WriteLine("9. Kullanicilari Dosyaya Yaz");
+            Console.WriteLine("10. Dosyadan Kullanicilari Oku");
+            Console.WriteLine("11. Cikis");
+
+            Console.Write("Seciminiz: ");
+            int secim = int.Parse(Console.ReadLine());
+
+            switch (secim)
+            {
+                case 1:
+                    Console.Write("Title: ");
+                    string title = Console.ReadLine();
+                    Console.Write("Author: ");
+                    string author = Console.ReadLine();
+                    Console.Write("ISBN: ");
+                    string isbn = Console.ReadLine();
+                    kutuphane.AddBook(new Kitap(title, author, isbn));
+                    break;
+                case 2:
+                    kutuphane.ListBooks();
+                    break;
+                case 3:
+                    Console.Write("Name: ");
+                    string name = Console.ReadLine();
+                    Console.Write("UserID: ");
+                    int userId = int.Parse(Console.ReadLine());
+                    kutuphane.AddUser(new Kullanici(name, userId));
+                    break;
+                case 4:
+                    kutuphane.ListUsers();
+                    break;
+                case 5:
+                    Console.Write("ISBN: ");
+                    string lendIsbn = Console.ReadLine();
+                    Console.Write("UserID: ");
+                    int lendUserId = int.Parse(Console.ReadLine());
+                    kutuphane.LendBook(lendIsbn, lendUserId);
+                    break;
+                case 6:
+                    Console.Write("ISBN: ");
+                    string returnIsbn = Console.ReadLine();
+                    kutuphane.ReturnBook(returnIsbn);
+                    break;
+                case 7:
+                    Console.Write("Kitap dosya yolu: ");
+                    string kitapDosyaYolu = Console.ReadLine();
+                    kutuphane.SaveBooksToFile(kitapDosyaYolu);
+                    break;
+                case 8:
+                    Console.Write("Kitap dosya yolu: ");
+                    string kitapOkuDosyaYolu = Console.ReadLine();
+                    kutuphane.ReadBooksFromFile(kitapOkuDosyaYolu);
+                    break;
+                case 9:
+                    Console.Write("Kullanıcı dosya yolu: ");
+                    string kullaniciDosyaYolu = Console.ReadLine();
+                    kutuphane.SaveUsersToFile(kullaniciDosyaYolu);
+                    break;
+                case 10:
+                    Console.Write("Kullanıcı dosya yolu: ");
+                    string kullaniciOkuDosyaYolu = Console.ReadLine();
+                    kutuphane.ReadUsersFromFile(kullaniciOkuDosyaYolu);
+                    break;
+                case 11:
+                    return;
+                default:
+                    Console.WriteLine("Geçersiz seçim!");
+                    break;
+            }
+        }
+    }
+}
